@@ -1,0 +1,11 @@
+.git
+.github
+.runlogs
+**/bin
+**/obj
+Dockerfile
+docker-compose.yml
+helm-chart
+k8s
+manifests
+*.md

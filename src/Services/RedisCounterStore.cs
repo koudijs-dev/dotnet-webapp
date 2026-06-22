@@ -8,7 +8,8 @@ public class RedisCounterStore : ICounterStore
     [
         ("counter-1", "Counter 1"),
         ("counter-2", "Counter 2"),
-        ("counter-3", "Counter 3")
+        ("counter-3", "Counter 3"),
+        ("counter-4", "Counter 4")
     ];
 
     private readonly IDatabase _database;

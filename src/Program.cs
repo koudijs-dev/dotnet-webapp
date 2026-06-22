@@ -1,3 +1,4 @@
+using Prometheus;
 using Microsoft.Extensions.Options;
 using simple_container.Services;
 using StackExchange.Redis;
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection("Redis"));
+builder.Services.AddSingleton<ICounterMetrics, PrometheusCounterMetrics>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
 {
     var redisOptions = serviceProvider.GetRequiredService<IOptions<RedisOptions>>().Value;
@@ -31,12 +33,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseHttpMetrics();
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
 
+app.MapMetrics();
 app.MapRazorPages();
 
 app.Run();

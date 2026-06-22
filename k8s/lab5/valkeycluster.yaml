@@ -1,0 +1,19 @@
+apiVersion: valkey.io/v1alpha1
+kind: ValkeyCluster
+metadata:
+  name: cache
+  labels:
+    app.kubernetes.io/name: cache
+    app.kubernetes.io/part-of: lab5
+spec:
+  shards: 3
+  replicas: 0
+  config:
+    maxmemory: 96mb
+    maxmemory-policy: allkeys-lru
+  resources:
+    requests:
+      cpu: 25m
+      memory: 96Mi
+    limits:
+      memory: 192Mi

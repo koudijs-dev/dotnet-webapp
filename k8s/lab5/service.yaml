@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotnet-webapp
+  labels:
+    app.kubernetes.io/name: dotnet-webapp
+    app.kubernetes.io/part-of: lab5
+spec:
+  selector:
+    app.kubernetes.io/name: dotnet-webapp
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

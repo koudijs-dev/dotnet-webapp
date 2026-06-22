@@ -7,3 +7,7 @@ image:
 redis:
   configuration: replace-me-with-your-valkey-seed-endpoint:6379
   instanceName: dotnet-webapp
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s

@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dotnet-webapp
+  labels:
+    app.kubernetes.io/name: dotnet-webapp
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dotnet-webapp
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
