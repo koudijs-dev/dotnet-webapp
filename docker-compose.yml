@@ -1,181 +1,34 @@
 services:
-  valkey-node-0:
+  valkey:
     image: valkey/valkey:9.1-alpine
     command:
       - sh
       - -c
       - |
         exec valkey-server \
-          --port 7000 \
+          --port 6379 \
           --bind 0.0.0.0 \
           --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
+          --appendonly yes
     volumes:
-      - valkey-node-0-data:/data
+      - valkey-data:/data
     healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7000", "ping"]
+      test: ["CMD", "valkey-cli", "-p", "6379", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  valkey-node-1:
-    image: valkey/valkey:9.1-alpine
-    command:
-      - sh
-      - -c
-      - |
-        exec valkey-server \
-          --port 7001 \
-          --bind 0.0.0.0 \
-          --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
-    volumes:
-      - valkey-node-1-data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7001", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  valkey-node-2:
-    image: valkey/valkey:9.1-alpine
-    command:
-      - sh
-      - -c
-      - |
-        exec valkey-server \
-          --port 7002 \
-          --bind 0.0.0.0 \
-          --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
-    volumes:
-      - valkey-node-2-data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7002", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  valkey-node-3:
-    image: valkey/valkey:9.1-alpine
-    command:
-      - sh
-      - -c
-      - |
-        exec valkey-server \
-          --port 7003 \
-          --bind 0.0.0.0 \
-          --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
-    volumes:
-      - valkey-node-3-data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7003", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  valkey-node-4:
-    image: valkey/valkey:9.1-alpine
-    command:
-      - sh
-      - -c
-      - |
-        exec valkey-server \
-          --port 7004 \
-          --bind 0.0.0.0 \
-          --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
-    volumes:
-      - valkey-node-4-data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7004", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  valkey-node-5:
-    image: valkey/valkey:9.1-alpine
-    command:
-      - sh
-      - -c
-      - |
-        exec valkey-server \
-          --port 7005 \
-          --bind 0.0.0.0 \
-          --protected-mode no \
-          --appendonly yes \
-          --cluster-enabled yes \
-          --cluster-config-file /data/nodes.conf \
-          --cluster-node-timeout 5000
-    volumes:
-      - valkey-node-5-data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "-p", "7005", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  valkey-cluster-init:
-    image: valkey/valkey:9.1-alpine
-    restart: "no"
-    depends_on:
-      valkey-node-0:
-        condition: service_healthy
-      valkey-node-1:
-        condition: service_healthy
-      valkey-node-2:
-        condition: service_healthy
-      valkey-node-3:
-        condition: service_healthy
-      valkey-node-4:
-        condition: service_healthy
-      valkey-node-5:
-        condition: service_healthy
-    command:
-      - sh
-      - -c
-      - |
-        if valkey-cli -h valkey-node-0 -p 7000 cluster info 2>/dev/null | grep -q "cluster_state:ok"; then
-          echo "Valkey cluster already initialized."
-        else
-          valkey-cli --cluster create \
-            valkey-node-0:7000 \
-            valkey-node-1:7001 \
-            valkey-node-2:7002 \
-            valkey-node-3:7003 \
-            valkey-node-4:7004 \
-            valkey-node-5:7005 \
-            --cluster-replicas 1 \
-            --cluster-yes
-        fi
 
   webapp:
     image: mcr.microsoft.com/dotnet/sdk:10.0
     depends_on:
-      valkey-cluster-init:
-        condition: service_completed_successfully
+      valkey:
+        condition: service_healthy
     working_dir: /workspace/src
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
-      EXAMPLE_VAR: Running against the local Valkey cluster
-      Redis__Configuration: valkey-node-0:7000,valkey-node-1:7001,valkey-node-2:7002,valkey-node-3:7003,valkey-node-4:7004,valkey-node-5:7005
+      EXAMPLE_VAR: Running against the local Valkey container
+      Redis__Configuration: valkey:6379
       Redis__InstanceName: dotnet-webapp
     ports:
       - "8080:8080"
@@ -187,13 +40,8 @@ services:
       - -c
       - |
         dotnet restore simple-container.sln && \
-        dotnet watch run --project simple-container.csproj --no-launch-profile --urls http://0.0.0.0:8080
+        dotnet run --project simple-container.csproj --no-launch-profile --urls http://0.0.0.0:8080
 
 volumes:
   dotnet-nuget-cache:
-  valkey-node-0-data:
-  valkey-node-1-data:
-  valkey-node-2-data:
-  valkey-node-3-data:
-  valkey-node-4-data:
-  valkey-node-5-data:
+  valkey-data:

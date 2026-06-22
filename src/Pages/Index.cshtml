@@ -13,7 +13,7 @@
                 Each button increments a value stored outside the app process, so the counts survive pod restarts.
             </p>
         </div>
-        <img src="harvest_black.svg" alt="Harvest logo" class="state-demo__logo">
+        <img src="ict-improve-color.svg" alt="ICT Improve logo" class="state-demo__logo">
     </div>
 
     <div class="state-demo__meta">
@@ -24,6 +24,18 @@
         <div>
             <span class="state-demo__meta-label">Example env var</span>
             <code>@(string.IsNullOrWhiteSpace(Model.ExampleVar) ? "not set" : Model.ExampleVar)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">E-mail address</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.EmailAddress) ? "not provided" : Model.UserContext.EmailAddress)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">First group</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.FirstGroup) ? "not provided" : Model.UserContext.FirstGroup)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">Client IP</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.IpAddress) ? "not provided" : Model.UserContext.IpAddress)</code>
         </div>
     </div>
 

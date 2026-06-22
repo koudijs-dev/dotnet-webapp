@@ -1,10 +1,10 @@
 # .NET web app with Valkey-backed state
 
-This example now keeps three counters in Valkey instead of process memory, so the values survive app restarts and pod replacement.
+This example keeps three counters in Valkey instead of process memory, so the values survive app restarts and pod replacement.
 
 ## Local dev demo
 
-Run the app and a six-node Valkey cluster with:
+Run the app and a single persistent Valkey container with:
 
 ```powershell
 docker compose up
@@ -14,11 +14,7 @@ Then open:
 
 * `http://localhost:8080`
 
-The `webapp` service runs `dotnet watch`, so edits under `/src` are picked up automatically.
-
-## Why the app runs in Compose too
-
-Valkey Cluster does not behave well behind arbitrary Docker port remapping. For local dev, the simplest reliable setup is to keep the app and cluster on the same Docker network so the client can follow cluster redirects cleanly.
+The `webapp` service runs `dotnet run` inside Compose for a more stable local demo.
 
 ## What the demo shows
 
@@ -37,9 +33,9 @@ docker run --rm -p 9006:80 simple-container
 
 ## Kubernetes manifests
 
-The deployment and Helm chart now expose these environment variables:
+The deployment and Helm chart expose these environment variables:
 
 * `Redis__Configuration`
 * `Redis__InstanceName`
 
-Set `Redis__Configuration` to a reachable Valkey node or cluster seed endpoint in your environment.
+Set `Redis__Configuration` to a reachable Valkey endpoint in your environment.

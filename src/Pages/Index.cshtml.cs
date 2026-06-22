@@ -20,6 +20,7 @@ public class IndexModel : PageModel
     public IReadOnlyList<CounterSnapshot> Counters { get; private set; } = [];
     public string? ExampleVar { get; private set; }
     public string RedisConfiguration { get; private set; } = string.Empty;
+    public RequestUserContext UserContext { get; private set; } = new(null, null, null);
 
     [TempData]
     public string? ErrorMessage { get; set; }
@@ -31,6 +32,7 @@ public class IndexModel : PageModel
     {
         ExampleVar = Environment.GetEnvironmentVariable("EXAMPLE_VAR");
         RedisConfiguration = _configuration["Redis:Configuration"] ?? "not configured";
+        UserContext = RequestUserContextReader.Read(HttpContext);
 
         try
         {
