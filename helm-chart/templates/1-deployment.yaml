@@ -22,6 +22,10 @@ spec:
         env:
         - name: EXAMPLE_VAR
           value: "Some changed value inserted by an environment value"
+        - name: Redis__Configuration
+          value: "{{ .Values.redis.configuration }}"
+        - name: Redis__InstanceName
+          value: "{{ .Values.redis.instanceName }}"
         ports:
         - name: http
           containerPort: 80

@@ -1,12 +1,56 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "State Demo";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about monitoring & observability</p>
-    <img src="harvest_black.svg">
-    <p>@ViewData["ExampleVar"]</p>
-</div>
+<section class="state-demo">
+    <div class="state-demo__intro">
+        <div>
+            <p class="state-demo__eyebrow">Persistent application state</p>
+            <h1>Three counters backed by Valkey</h1>
+            <p class="state-demo__copy">
+                Each button increments a value stored outside the app process, so the counts survive pod restarts.
+            </p>
+        </div>
+        <img src="harvest_black.svg" alt="Harvest logo" class="state-demo__logo">
+    </div>
+
+    <div class="state-demo__meta">
+        <div>
+            <span class="state-demo__meta-label">Valkey endpoints</span>
+            <code>@Model.RedisConfiguration</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">Example env var</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.ExampleVar) ? "not set" : Model.ExampleVar)</code>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="state-demo__message state-demo__message--success">@Model.StatusMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="state-demo__message state-demo__message--error">@Model.ErrorMessage</div>
+    }
+
+    <div class="state-demo__grid">
+        @foreach (var counter in Model.Counters)
+        {
+            <article class="state-demo__card">
+                <div>
+                    <p class="state-demo__card-label">@counter.DisplayName</p>
+                    <p class="state-demo__card-value">@counter.Value</p>
+                </div>
+
+                <form method="post" asp-page-handler="Increment">
+                    <input type="hidden" name="counterId" value="@counter.Id">
+                    <button type="submit" class="state-demo__button">Increase</button>
+                </form>
+            </article>
+        }
+    </div>
+</section>

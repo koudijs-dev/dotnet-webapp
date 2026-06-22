@@ -22,6 +22,10 @@ spec:
         env:
         - name: EXAMPLE_VAR
           value: "Simon was here"
+        - name: Redis__Configuration
+          value: "replace-me-with-your-valkey-seed-endpoint:6379"
+        - name: Redis__InstanceName
+          value: "dotnet-webapp"
         ports:
         - name: http
           containerPort: 80
