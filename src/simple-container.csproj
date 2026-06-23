@@ -5,12 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>simple_container</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-    <PackageReference Include="StackExchange.Redis" Version="3.0.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1"/>
+    <PackageReference Include="StackExchange.Redis" Version="3.0.0"/>
   </ItemGroup>
 
 </Project>
