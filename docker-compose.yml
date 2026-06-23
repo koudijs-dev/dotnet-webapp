@@ -1,0 +1,47 @@
+services:
+  valkey:
+    image: valkey/valkey:9.1-alpine
+    command:
+      - sh
+      - -c
+      - |
+        exec valkey-server \
+          --port 6379 \
+          --bind 0.0.0.0 \
+          --protected-mode no \
+          --appendonly yes
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  webapp:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    depends_on:
+      valkey:
+        condition: service_healthy
+    working_dir: /workspace/src
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      EXAMPLE_VAR: Running against the local Valkey container
+      Redis__Configuration: valkey:6379
+      Redis__InstanceName: dotnet-webapp
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src:/workspace/src
+      - dotnet-nuget-cache:/root/.nuget/packages
+    command:
+      - sh
+      - -c
+      - |
+        dotnet restore simple-container.sln && \
+        dotnet run --project simple-container.csproj --no-launch-profile --urls http://0.0.0.0:8080
+
+volumes:
+  dotnet-nuget-cache:
+  valkey-data:

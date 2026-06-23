@@ -16,3 +16,128 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.state-demo {
+  padding: 32px 0 48px;
+}
+
+.state-demo__intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.state-demo__eyebrow {
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.state-demo__env-label {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.state-demo__intro h1 {
+  margin-bottom: 12px;
+  font-size: 2.4rem;
+}
+
+.state-demo__copy {
+  max-width: 52rem;
+  color: #374151;
+}
+
+.state-demo__logo {
+  width: 120px;
+  max-width: 100%;
+}
+
+.state-demo__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.state-demo__meta-label,
+.state-demo__card-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.state-demo__message {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.state-demo__message--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.state-demo__message--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.state-demo__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.state-demo__card {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.state-demo__card-value {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.state-demo__button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 18px;
+  background: #111827;
+  color: #fff;
+  font-weight: 600;
+}
+
+.state-demo__button:hover {
+  background: #1f2937;
+}
+
+@media (max-width: 767px) {
+  .state-demo__intro,
+  .state-demo__card {
+    flex-direction: column;
+    align-items: start;
+  }
+}

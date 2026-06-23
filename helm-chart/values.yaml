@@ -4,3 +4,10 @@ image:
   repository: ghcr.io/harvest-masterclass-devops/dotnet-webapp
   tag: main
   imagePullPolicy: Always
+redis:
+  configuration: replace-me-with-your-valkey-seed-endpoint:6379
+  instanceName: dotnet-webapp
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s

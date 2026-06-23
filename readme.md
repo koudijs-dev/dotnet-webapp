@@ -1,27 +1,78 @@
-# Basic approach on running some code in a container
+# .NET web app with Valkey-backed state
 
-## Steps
+This example keeps three counters in Valkey instead of process memory, so the values survive app restarts and pod replacement.
 
+## Local dev demo
+
+Run the app and a single persistent Valkey container with:
+
+```powershell
+docker compose up
 ```
+
+Then open:
+
+* `http://localhost:8080`
+
+The `webapp` service runs `dotnet run` inside Compose for a more stable local demo.
+The Prometheus metrics endpoint is exposed at `http://localhost:8080/metrics`.
+
+## What the demo shows
+
+* Three counters are stored in Valkey.
+* Restarting the web app does not reset them.
+* The app replicas in Kubernetes can be replaced without losing the values, as long as they point at the same Valkey deployment.
+
+## Container image
+
+To build the app image directly:
+
+```powershell
 docker build . -t simple-container
-docker run --name simple-instance -it -p 9006:80 simple-container
+docker run --rm -p 9006:80 simple-container
 ```
 
-## Building locally (optional)
+## Kubernetes manifests
 
-You will dotnet to build locally.
+For the workshop Lab 5 path, use the prepared Kustomize bundle:
 
-* `dotnet --version` should return at least `6.0.201`
-  * You can install by `choco install dotnet-sdk` (or [download](https://dotnet.microsoft.com/en-us/download) it)
-  * `choco list --localonly` to show your locally installed stuff
-* Make sure you switch your docker to 'linux containers' mode (in the context menu).
+```bash
+kubectl apply -k k8s/lab5
+```
 
-## Installing
+That bundle creates:
 
-* `/manifests` contains a minimal example to get this running.
-* `/helm-chart` contains a chart that allows you to tweak the installation because the most important values are templated.
+* a `lab5` namespace;
+* a `ValkeyCluster` named `cache`;
+* a stable `valkey-seed` Service for the app to connect to;
+* the .NET web app Deployment + Service;
+* a Traefik `IngressRoute` at `https://lab5.k8s.koudijs.dev`;
+* a `ServiceMonitor` for the app's `/metrics` endpoint.
 
-# Resources
+The deployment and Helm chart expose these environment variables:
 
-* https://dev.to/mcklmt/build-and-deploy-net-5-app-with-github-actions-1de
-* https://dev.to/berviantoleo/web-api-in-net-6-docker-41d5
+* `Redis__Configuration`
+* `Redis__InstanceName`
+
+Set `Redis__Configuration` to a reachable Valkey endpoint in your environment.
+
+The raw Kubernetes manifests also include a basic `ServiceMonitor` for Prometheus Operator users.
+
+## Automated releases
+
+This repo is wired for `release-please`, so merges to `main` that use Conventional Commits can create a second, automated release PR with the version bump and changelog update.
+
+Examples:
+
+* `feat: add a new counter` -> opens a release PR for the next minor release
+* `fix: correct the metrics label` -> opens a release PR for the next patch release
+* `feat!: change the counter API response` -> opens a release PR for the next major release
+* `chore: rename a variable` -> does not create a release by itself
+
+The release PR updates:
+
+* `CHANGELOG.md`
+* `src/simple-container.csproj`
+* `helm-chart/Chart.yaml`
+
+The workflow lives in `.github/workflows/release-please.yml`. If you want the normal CI workflow to run on release PRs too, set a `RELEASE_PLEASE_TOKEN` secret with a PAT; otherwise it falls back to `GITHUB_TOKEN`.

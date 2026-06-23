@@ -1,12 +1,76 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "State Demo";
+    var statusDisplay = string.IsNullOrWhiteSpace(Model.StatusMessage) ? "none" : "block";
+    var errorDisplay = string.IsNullOrWhiteSpace(Model.ErrorMessage) ? "none" : "block";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about monitoring & observability</p>
-    <img src="harvest_black.svg">
-    <p>@ViewData["ExampleVar"]</p>
-</div>
+<section class="state-demo">
+    <div class="state-demo__intro">
+        <div>
+            <p class="state-demo__eyebrow">Persistent application state</p>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentLabel))
+            {
+                <p class="state-demo__env-label">@Model.EnvironmentLabel</p>
+            }
+            <h1>Three counters backed by Valkey</h1>
+            <p class="state-demo__copy">
+                Each button increments a value stored outside the app process, so the counts survive pod restarts.
+            </p>
+        </div>
+        <img src="ict-improve-color.svg" alt="ICT Improve logo" class="state-demo__logo">
+    </div>
+
+    <div class="state-demo__meta">
+        <div>
+            <span class="state-demo__meta-label">Backing service</span>
+            <code>@Model.BackingServiceName</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">State namespace</span>
+            <code>@Model.RedisInstanceName</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">Example env var</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.ExampleVar) ? "not set" : Model.ExampleVar)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">E-mail address</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.EmailAddress) ? "not provided" : Model.UserContext.EmailAddress)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">First group</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.FirstGroup) ? "not provided" : Model.UserContext.FirstGroup)</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">Client IP</span>
+            <code>@(string.IsNullOrWhiteSpace(Model.UserContext.IpAddress) ? "not provided" : Model.UserContext.IpAddress)</code>
+        </div>
+    </div>
+
+    <div id="state-demo-status"
+         class="state-demo__message state-demo__message--success"
+         style="display:@statusDisplay;">@Model.StatusMessage</div>
+
+    <div id="state-demo-error"
+         class="state-demo__message state-demo__message--error"
+         style="display:@errorDisplay;">@Model.ErrorMessage</div>
+
+    <div class="state-demo__grid">
+        @foreach (var counter in Model.Counters)
+        {
+            <article class="state-demo__card">
+                <div>
+                    <p class="state-demo__card-label">@counter.DisplayName</p>
+                    <p class="state-demo__card-value" data-counter-value>@counter.Value</p>
+                </div>
+
+                <form method="post" asp-page-handler="Increment" data-counter-form data-counter-id="@counter.Id" data-counter-name="@counter.DisplayName">
+                    <input type="hidden" name="counterId" value="@counter.Id">
+                    <button type="submit" class="state-demo__button" data-counter-button>Increase</button>
+                </form>
+            </article>
+        }
+    </div>
+</section>
