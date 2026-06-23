@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+@using Microsoft.Extensions.Options
+@using simple_container.Services
+@inject IOptions<AppUiOptions> AppUiOptionsAccessor
+@{
+    var appUi = AppUiOptionsAccessor.Value;
+    var backgroundColor = string.IsNullOrWhiteSpace(appUi.BackgroundColor) ? "#f8fafc" : appUi.BackgroundColor;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,7 +15,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/simple_container.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body style="background-color: @backgroundColor;">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">

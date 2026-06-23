@@ -8,6 +8,10 @@
     <div class="state-demo__intro">
         <div>
             <p class="state-demo__eyebrow">Persistent application state</p>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentLabel))
+            {
+                <p class="state-demo__env-label">@Model.EnvironmentLabel</p>
+            }
             <h1>Three counters backed by Valkey</h1>
             <p class="state-demo__copy">
                 Each button increments a value stored outside the app process, so the counts survive pod restarts.
@@ -18,8 +22,12 @@
 
     <div class="state-demo__meta">
         <div>
-            <span class="state-demo__meta-label">Valkey endpoints</span>
-            <code>@Model.RedisConfiguration</code>
+            <span class="state-demo__meta-label">Backing service</span>
+            <code>@Model.BackingServiceName</code>
+        </div>
+        <div>
+            <span class="state-demo__meta-label">State namespace</span>
+            <code>@Model.RedisInstanceName</code>
         </div>
         <div>
             <span class="state-demo__meta-label">Example env var</span>

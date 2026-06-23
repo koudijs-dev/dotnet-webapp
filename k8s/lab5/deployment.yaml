@@ -23,18 +23,20 @@ spec:
     spec:
       containers:
         - name: dotnet-webapp
-          image: ghcr.io/koudijs-dev/dotnet-webapp:redis
+          image: ghcr.io/koudijs-dev/dotnet-webapp:sha-dde0c08
           imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: dotnet-webapp-settings
           env:
-            - name: EXAMPLE_VAR
-              value: "Lab 5: state lives in Valkey"
             - name: Redis__Configuration
-              value: "valkey-seed:6379,abortConnect=false"
-            - name: Redis__InstanceName
-              value: "lab5"
+              valueFrom:
+                secretKeyRef:
+                  name: dotnet-webapp-valkey-auth
+                  key: connection
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           readinessProbe:
             httpGet:

@@ -3,6 +3,8 @@ kind: Kustomization
 namespace: lab5
 resources:
   - namespace.yaml
+  - configmap.yaml
+  - valkey-auth-secret.yaml
   - valkeycluster.yaml
   - valkey-seed-service.yaml
   - deployment.yaml

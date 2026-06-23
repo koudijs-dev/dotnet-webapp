@@ -36,6 +36,17 @@ body {
   text-transform: uppercase;
 }
 
+.state-demo__env-label {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .state-demo__intro h1 {
   margin-bottom: 12px;
   font-size: 2.4rem;

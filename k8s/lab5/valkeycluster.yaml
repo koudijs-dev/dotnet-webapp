@@ -8,6 +8,22 @@ metadata:
 spec:
   shards: 3
   replicas: 0
+  users:
+    - name: dotnet-webapp
+      passwordSecret:
+        name: dotnet-webapp-valkey-auth
+        keys:
+          - password
+      keys:
+        readWrite:
+          - "lab5:counters:{state-demo}:*"
+      commands:
+        allow:
+          - "@connection"
+          - "get"
+          - "mget"
+          - "incr"
+          - "incrby"
   config:
     maxmemory: 96mb
     maxmemory-policy: allkeys-lru

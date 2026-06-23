@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.Configure<AppUiOptions>(builder.Configuration.GetSection("AppUi"));
 builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection("Redis"));
 builder.Services.AddSingleton<ICounterMetrics, PrometheusCounterMetrics>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>

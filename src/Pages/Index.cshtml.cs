@@ -7,21 +7,30 @@ namespace simple_container.Pages;
 public class IndexModel : PageModel
 {
     private readonly IConfiguration _configuration;
+    private readonly AppUiOptions _appUiOptions;
     private readonly ICounterMetrics _counterMetrics;
     private readonly ICounterStore _counterStore;
     private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(ILogger<IndexModel> logger, ICounterStore counterStore, IConfiguration configuration, ICounterMetrics counterMetrics)
+    public IndexModel(
+        ILogger<IndexModel> logger,
+        ICounterStore counterStore,
+        IConfiguration configuration,
+        ICounterMetrics counterMetrics,
+        Microsoft.Extensions.Options.IOptions<AppUiOptions> appUiOptions)
     {
         _logger = logger;
         _counterStore = counterStore;
         _configuration = configuration;
         _counterMetrics = counterMetrics;
+        _appUiOptions = appUiOptions.Value;
     }
 
     public IReadOnlyList<CounterSnapshot> Counters { get; private set; } = [];
     public string? ExampleVar { get; private set; }
-    public string RedisConfiguration { get; private set; } = string.Empty;
+    public string BackingServiceName { get; private set; } = "Valkey";
+    public string RedisInstanceName { get; private set; } = string.Empty;
+    public string EnvironmentLabel { get; private set; } = string.Empty;
     public RequestUserContext UserContext { get; private set; } = new(null, null, null);
 
     [TempData]
@@ -33,7 +42,8 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         ExampleVar = Environment.GetEnvironmentVariable("EXAMPLE_VAR");
-        RedisConfiguration = _configuration["Redis:Configuration"] ?? "not configured";
+        RedisInstanceName = _configuration["Redis:InstanceName"] ?? "not configured";
+        EnvironmentLabel = _appUiOptions.EnvironmentLabel;
         UserContext = RequestUserContextReader.Read(HttpContext);
 
         try
