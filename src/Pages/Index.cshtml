@@ -2,6 +2,8 @@
 @model IndexModel
 @{
     ViewData["Title"] = "State Demo";
+    var statusDisplay = string.IsNullOrWhiteSpace(Model.StatusMessage) ? "none" : "block";
+    var errorDisplay = string.IsNullOrWhiteSpace(Model.ErrorMessage) ? "none" : "block";
 }
 
 <section class="state-demo">
@@ -47,15 +49,13 @@
         </div>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
-    {
-        <div class="state-demo__message state-demo__message--success">@Model.StatusMessage</div>
-    }
+    <div id="state-demo-status"
+         class="state-demo__message state-demo__message--success"
+         style="display:@statusDisplay;">@Model.StatusMessage</div>
 
-    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-    {
-        <div class="state-demo__message state-demo__message--error">@Model.ErrorMessage</div>
-    }
+    <div id="state-demo-error"
+         class="state-demo__message state-demo__message--error"
+         style="display:@errorDisplay;">@Model.ErrorMessage</div>
 
     <div class="state-demo__grid">
         @foreach (var counter in Model.Counters)
@@ -63,12 +63,12 @@
             <article class="state-demo__card">
                 <div>
                     <p class="state-demo__card-label">@counter.DisplayName</p>
-                    <p class="state-demo__card-value">@counter.Value</p>
+                    <p class="state-demo__card-value" data-counter-value>@counter.Value</p>
                 </div>
 
-                <form method="post" asp-page-handler="Increment">
+                <form method="post" asp-page-handler="Increment" data-counter-form data-counter-id="@counter.Id" data-counter-name="@counter.DisplayName">
                     <input type="hidden" name="counterId" value="@counter.Id">
-                    <button type="submit" class="state-demo__button">Increase</button>
+                    <button type="submit" class="state-demo__button" data-counter-button>Increase</button>
                 </form>
             </article>
         }

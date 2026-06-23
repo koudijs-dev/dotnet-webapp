@@ -23,6 +23,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
     return ConnectionMultiplexer.Connect(configuration);
 });
 builder.Services.AddSingleton<ICounterStore, RedisCounterStore>();
+builder.Services.AddSingleton<ICounterOperations, CounterOperations>();
 
 var app = builder.Build();
 
@@ -40,6 +41,31 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapGet("/api/counters", async (ICounterOperations counterOperations) =>
+{
+    var counters = await counterOperations.GetCountersAsync();
+    return Results.Ok(counters);
+});
+
+app.MapPost("/api/counters/{counterId}/increment", async (string counterId, HttpContext httpContext, ICounterOperations counterOperations, ILogger<Program> logger) =>
+{
+    try
+    {
+        var userContext = RequestUserContextReader.Read(httpContext);
+        var result = await counterOperations.IncrementAsync(counterId, userContext.EmailAddress);
+        return Results.Ok(result);
+    }
+    catch (ArgumentOutOfRangeException exception)
+    {
+        return Results.BadRequest(new { error = exception.Message, counterId });
+    }
+    catch (Exception exception)
+    {
+        logger.LogError(exception, "Failed to increment counter {CounterId} through the API.", counterId);
+        return Results.Problem("Could not increment the counter right now.");
+    }
+});
 
 app.MapMetrics();
 app.MapRazorPages();

@@ -8,21 +8,21 @@ public class IndexModel : PageModel
 {
     private readonly IConfiguration _configuration;
     private readonly AppUiOptions _appUiOptions;
-    private readonly ICounterMetrics _counterMetrics;
+    private readonly ICounterOperations _counterOperations;
     private readonly ICounterStore _counterStore;
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
         ILogger<IndexModel> logger,
+        ICounterOperations counterOperations,
         ICounterStore counterStore,
         IConfiguration configuration,
-        ICounterMetrics counterMetrics,
         Microsoft.Extensions.Options.IOptions<AppUiOptions> appUiOptions)
     {
         _logger = logger;
+        _counterOperations = counterOperations;
         _counterStore = counterStore;
         _configuration = configuration;
-        _counterMetrics = counterMetrics;
         _appUiOptions = appUiOptions.Value;
     }
 
@@ -48,8 +48,7 @@ public class IndexModel : PageModel
 
         try
         {
-            Counters = await _counterStore.GetCountersAsync();
-            _counterMetrics.ObserveCounters(Counters);
+            Counters = await _counterOperations.GetCountersAsync();
         }
         catch (Exception exception)
         {
@@ -66,9 +65,8 @@ public class IndexModel : PageModel
         try
         {
             var userContext = RequestUserContextReader.Read(HttpContext);
-            var newValue = await _counterStore.IncrementAsync(counterId);
-            _counterMetrics.RecordIncrement(counterId, userContext.EmailAddress, newValue);
-            StatusMessage = $"{counterId} incremented to {newValue}.";
+            var result = await _counterOperations.IncrementAsync(counterId, userContext.EmailAddress);
+            StatusMessage = $"{counterId} incremented to {result.Value}.";
         }
         catch (Exception exception)
         {

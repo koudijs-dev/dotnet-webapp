@@ -57,3 +57,22 @@ The deployment and Helm chart expose these environment variables:
 Set `Redis__Configuration` to a reachable Valkey endpoint in your environment.
 
 The raw Kubernetes manifests also include a basic `ServiceMonitor` for Prometheus Operator users.
+
+## Automated releases
+
+This repo is wired for `release-please`, so merges to `main` that use Conventional Commits can create a second, automated release PR with the version bump and changelog update.
+
+Examples:
+
+* `feat: add a new counter` -> opens a release PR for the next minor release
+* `fix: correct the metrics label` -> opens a release PR for the next patch release
+* `feat!: change the counter API response` -> opens a release PR for the next major release
+* `chore: rename a variable` -> does not create a release by itself
+
+The release PR updates:
+
+* `CHANGELOG.md`
+* `src/simple-container.csproj`
+* `helm-chart/Chart.yaml`
+
+The workflow lives in `.github/workflows/release-please.yml`. If you want the normal CI workflow to run on release PRs too, set a `RELEASE_PLEASE_TOKEN` secret with a PAT; otherwise it falls back to `GITHUB_TOKEN`.
