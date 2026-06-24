@@ -75,4 +75,18 @@ The release PR updates:
 * `src/simple-container.csproj`
 * `helm-chart/Chart.yaml`
 
-The workflow lives in `.github/workflows/release-please.yml`. If you want the normal CI workflow to run on release PRs too, set a `RELEASE_PLEASE_TOKEN` secret with a PAT; otherwise it falls back to `GITHUB_TOKEN`.
+The workflow lives in `.github/workflows/release-please.yml`.
+
+The delivery structure is:
+
+* `.github/workflows/pipeline.yml` runs CI on every branch and PR build. It restores, builds, and validates the Docker image, and publishes a **prerelease** image for branch/PR builds — never on `main`.
+* `.github/workflows/release-please.yml` creates the release PR, updates the changelog, creates the GitHub Release when that PR is merged, and immediately publishes the official release image from the created tag.
+
+That means:
+
+* `main` commits never publish from CI; release images come only from an accepted release
+* `latest` only moves on an accepted release
+* release images get version tags such as `v0.2.0`, `0.2`, `0`, plus `latest`
+* branch and PR builds publish sortable semver-prerelease images — see [image-tags.md](image-tags.md)
+
+This structure avoids needing a second workflow trigger for the GitHub Release event, so it works cleanly even when `release-please` uses the default `GITHUB_TOKEN`.

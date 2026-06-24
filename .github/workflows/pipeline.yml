@@ -1,16 +1,20 @@
-name: Build container
+name: CI
 
 on:
   push:
     paths:
       - src/**
       - Dockerfile
+      - helm-chart/**
       - .github/workflows/pipeline.yml
+      - .github/workflows/release-please.yml
   pull_request:
     paths:
       - src/**
       - Dockerfile
+      - helm-chart/**
       - .github/workflows/pipeline.yml
+      - .github/workflows/release-please.yml
 
 permissions:
   contents: read
@@ -22,15 +26,20 @@ env:
   DOTNET_VERSION: 10.0.x
 
 concurrency:
-  group: container-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Build the PR head (not the merge commit) so the image matches the sha we tag.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          # Full history + tags so we can derive the next version from the latest release tag.
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -45,11 +54,51 @@ jobs:
         run: dotnet build simple-container.sln --configuration Release --no-restore
         working-directory: src
 
-      - name: Setup Docker Buildx
+      # Prerelease artifacts are published for branch and PR builds only.
+      # Release images for main are published by release-please.yml when a release is cut.
+      - name: Compute prerelease version
+        if: github.ref != 'refs/heads/main'
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Next version = patch bump of the latest vX.Y.Z release tag (default 0.0.0).
+          latest="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+          latest="${latest#v}"
+          [ -z "$latest" ] && latest="0.0.0"
+          IFS='.' read -r major minor patch <<< "$latest"
+          next="${major}.${minor}.$((patch + 1))"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            sha="${{ github.event.pull_request.head.sha }}"
+            channel="pr${{ github.event.pull_request.number }}"
+            # Increments by one with every commit added to the PR.
+            counter="${{ github.event.pull_request.commits }}"
+          else
+            sha="${{ github.sha }}"
+            channel="branch-${GITHUB_REF_NAME//[^a-zA-Z0-9]/-}"
+            counter="${{ github.run_number }}"
+          fi
+          sha="${sha:0:7}"
+
+          # Docker tags may not contain '+', so the sortable semver-prerelease is the tag
+          # and the full semver (with +build metadata) is carried in the OCI version label.
+          #   floating -> "0.2.1-pr23"     : always points at the latest build of this PR/branch
+          #   version  -> "0.2.1-pr23.2"   : the build for this commit count (replaced on amend/force-push)
+          floating="${next}-${channel}"
+          version="${floating}.${counter}"
+          echo "floating=${floating}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "full=${version}+sha-${sha}" >> "$GITHUB_OUTPUT"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "Prerelease version: ${version}+sha-${sha}"
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
+        if: github.ref != 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -57,23 +106,26 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker metadata
+        if: github.ref != 'refs/heads/main'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.floating }}
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=sha-${{ steps.version.outputs.sha }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.full }}
 
-      - name: Build and push image
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         env:
           DOCKER_BUILD_RECORD_RETENTION_DAYS: '3'
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          # main only validates the build here; release images come from release-please.yml.
+          push: ${{ github.ref != 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
