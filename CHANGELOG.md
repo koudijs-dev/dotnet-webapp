@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/koudijs-dev/dotnet-webapp/compare/v0.2.0...v0.3.0) (2026-06-24)
+
+
+### Features
+
+* let's add release please stuff in a better way ([6704281](https://github.com/koudijs-dev/dotnet-webapp/commit/67042816c39f1052e237ab8ddab64fb85643091a))
+
 ## [0.2.0](https://github.com/koudijs-dev/dotnet-webapp/compare/v0.1.0...v0.2.0) (2026-06-23)
 
 
